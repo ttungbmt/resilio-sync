@@ -1,0 +1,12 @@
+# Normalise line endings: store and check out text as LF on every OS.
+# Scripts in init/ and scripts/ run inside Linux containers or shells, where CRLF breaks them.
+* text=auto eol=lf
+
+# Shell scripts must stay LF even if auto-detection misclassifies them
+*.sh text eol=lf
+
+# Binary files (never diff or convert)
+*.btskey binary
+*.png    binary
+*.jpg    binary
+*.ico    binary
