@@ -1,0 +1,19 @@
+services:
+  resilio-sync:
+    image: lscr.io/linuxserver/resilio-sync:${RESILIO_TAG:-3.1.2}
+    container_name: resilio-sync
+    environment:
+      PUID: ${PUID:?set PUID in .env}
+      PGID: ${PGID:?set PGID in .env}
+      UMASK: ${UMASK:-022}
+      TZ: ${TZ:-Etc/UTC}
+    volumes:
+      - ${CONFIG_DIR:-./data/config}:/config
+      - ${SYNC_DIR:-./data/sync}:/sync
+      - ${DOWNLOADS_DIR:-./data/downloads}:/downloads
+    ports:
+      - "${WEBUI_BIND:-127.0.0.1}:${WEBUI_PORT:-8888}:8888/tcp"
+      # Host port must equal container port: Sync advertises its listening_port to peers
+      - "${SYNC_PORT:-44555}:${SYNC_PORT:-44555}/tcp"
+      - "${SYNC_PORT:-44555}:${SYNC_PORT:-44555}/udp"
+    restart: unless-stopped

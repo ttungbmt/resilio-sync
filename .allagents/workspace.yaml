@@ -1,0 +1,12 @@
+repositories: []
+plugins:
+  - claude-md-management@claude-plugins-official
+  - claude-code-setup@claude-plugins-official
+  - security-guidance@claude-plugins-official
+  - commit-commands@claude-plugins-official
+  - docker-skills@docker
+  - mattpocock-skills@mattpocock
+clients:
+  - name: claude
+    install: native
+version: 2

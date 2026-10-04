@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "marketplaces": {
+    "claude-plugins-official": {
+      "name": "claude-plugins-official",
+      "source": {
+        "type": "github",
+        "location": "anthropics/claude-plugins-official"
+      },
+      "path": "/home/ubuntu/.allagents/plugins/marketplaces/.projects/c8f5d04a42c1c6b0/claude-plugins-official",
+      "lastUpdated": "2026-10-04T04:12:33.491Z"
+    },
+    "docker": {
+      "name": "docker",
+      "source": {
+        "type": "github",
+        "location": "docker/skills"
+      },
+      "path": "/home/ubuntu/.allagents/plugins/marketplaces/.projects/c8f5d04a42c1c6b0/docker",
+      "lastUpdated": "2026-10-04T04:10:10.103Z"
+    }
+  }
+}

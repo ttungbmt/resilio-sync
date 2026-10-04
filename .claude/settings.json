@@ -1,0 +1,10 @@
+{
+  "enabledPlugins": {
+    "claude-md-management@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "docker-skills@docker": true,
+    "security-guidance@claude-plugins-official": true,
+    "mattpocock-skills@mattpocock": true
+  }
+}

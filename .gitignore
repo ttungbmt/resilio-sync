@@ -1,0 +1,9 @@
+# Secrets
+.env
+
+# Synced data (Resilio Sync folders, state)
+data/*
+!data/.gitignore
+
+# Claude Code local settings
+.claude/settings.local.json

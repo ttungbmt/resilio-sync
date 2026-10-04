@@ -1,1 +1,1 @@
-# resilio-sync
+# Resilio Sync
