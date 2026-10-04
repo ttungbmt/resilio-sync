@@ -1,3 +1,7 @@
 [tools]
 node = "lts"
-"npm:allagents" = "latest"
+"npm:allagents" = "1.19.0"
+
+[env]
+# Load .env into the shell (secrets: redacted from mise output). Missing file is skipped.
+_.file = { path = ".env", redact = true }

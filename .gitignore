@@ -1,9 +1,15 @@
 # Secrets
 .env
 
+# Per-machine extra mounts (template: compose.override.example.yaml)
+compose.override.yaml
+
 # Synced data (Resilio Sync folders, state)
 data/*
 !data/.gitignore
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Resilio licence keys
+*.btskey

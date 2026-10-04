@@ -17,8 +17,8 @@ Bring up the Resilio Sync stack and report whether it is healthy. Do not read or
    - permission denied on `/sync`, `/mnt/...` or config paths → PUID/PGID mismatch with host ownership
    - port already in use
    - license / storage path errors
-5. Web UI: `curl -sk -o /dev/null -w '%{http_code}\n' https://localhost:8888/gui/` (adjust the port if compose maps it differently). Expect 200/401/302.
-6. Sync port: confirm the listening port (default 55555 TCP/UDP) is published in `docker compose ps` output.
+5. Web UI: `curl -s -o /dev/null -w '%{http_code}\n' "http://$(docker compose port resilio-sync 8888)/gui/"` (the UI is plain HTTP). Expect 200/401/302.
+6. Sync port: confirm `SYNC_PORT` (default 44555) is published for both TCP and UDP in `docker compose ps`, and that the logs contain `listening_port set to <port>` from `init/10-listening-port.sh`. A log box saying `/custom-cont-init.d` is "not owned by root" means `init/` needs `sudo chown -R root:root init`.
 
 ## Report
 

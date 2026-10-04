@@ -1,0 +1,10 @@
+# Per-machine folders to sync. Copy to compose.override.yaml (gitignored);
+# `docker compose` merges it into compose.yaml automatically.
+#
+# Mount each folder below /sync (the image uses directory_root_policy: belowroot),
+# then add it in the web UI: + -> Standard folder -> /sync/vaults/<name>.
+services:
+  resilio-sync:
+    volumes:
+      - /path/to/first-vault:/sync/vaults/first
+      - /path/to/second-vault:/sync/vaults/second

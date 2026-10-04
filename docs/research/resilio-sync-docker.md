@@ -151,7 +151,7 @@ Advanced Preferences parameters can also go into the config file [S11].
 - Docker Engine ≥ 28 with the Compose v2 plugin (`docker compose`). See §6 for why 28 [S19b].
 - An x86-64 or arm64 host [S9][S24].
 - A Resilio Sync licence for v3: free non-commercial registration, or an existing Home Pro / Family key [S14].
-- Router/firewall access if peers are outside the LAN, to forward `55555` TCP+UDP [S10].
+- Router/firewall access if peers are outside the LAN, to forward `SYNC_PORT` (`44555` here; Sync's default is `55555`) TCP+UDP [S10].
 
 ### 8.2 Directory layout
 
@@ -173,58 +173,15 @@ mkdir -p data/config data/sync data/downloads
 id -u; id -g          # values for PUID / PGID
 ```
 
-### 8.3 Example `.env.example`
+### 8.3 `.env.example` and `compose.yaml`
 
-```dotenv
-# Image tag: pin to a linuxserver version tag (see https://hub.docker.com/r/linuxserver/resilio-sync/tags)
-RESILIO_TAG=3.1.2
+The live files are [`../../.env.example`](../../.env.example) and [`../../compose.yaml`](../../compose.yaml); they are not copied here so they can't drift. Compared with linuxserver's example [S7], the stack adds the UDP mapping and loopback binding [S2][S10][S19b], uses `SYNC_PORT=44555` (see §9, WSL2/Hyper-V), and caps the json-file log.
 
-# Host user/group that owns ./data (output of `id -u` / `id -g`)
-PUID=1000
-PGID=1000
-UMASK=022
-TZ=Etc/UTC
+`SYNC_PORT` and `listening_port` must match [S2][S11]. This repo enforces it: `init/10-listening-port.sh`, mounted at `/custom-cont-init.d`, rewrites `listening_port` in `/config/sync.conf` from `SYNC_PORT` on every start, before Sync launches. linuxserver warns when that folder isn't owned by root, so run `sudo chown -R root:root init` once after cloning.
 
-# Web UI: keep on loopback; use an SSH tunnel or reverse proxy for remote access
-WEBUI_BIND=127.0.0.1
-WEBUI_PORT=8888
+Per-machine folders outside the repo go in `compose.override.yaml` (template: `compose.override.example.yaml`), mounted under `/sync/vaults/<name>`.
 
-# Sync listening port: must match "listening_port" in data/config/sync.conf
-SYNC_PORT=55555
-
-# Host paths
-CONFIG_DIR=./data/config
-SYNC_DIR=./data/sync
-DOWNLOADS_DIR=./data/downloads
-```
-
-### 8.4 Example `compose.yaml`
-
-```yaml
-services:
-  resilio-sync:
-    image: lscr.io/linuxserver/resilio-sync:${RESILIO_TAG:-latest}
-    container_name: resilio-sync
-    environment:
-      PUID: ${PUID:?set PUID in .env}
-      PGID: ${PGID:?set PGID in .env}
-      UMASK: ${UMASK:-022}
-      TZ: ${TZ:-Etc/UTC}
-    volumes:
-      - ${CONFIG_DIR:-./data/config}:/config
-      - ${SYNC_DIR:-./data/sync}:/sync
-      - ${DOWNLOADS_DIR:-./data/downloads}:/downloads
-    ports:
-      - "${WEBUI_BIND:-127.0.0.1}:${WEBUI_PORT:-8888}:8888/tcp"
-      # host port must equal container port (see research note §3)
-      - "${SYNC_PORT:-55555}:${SYNC_PORT:-55555}/tcp"
-      - "${SYNC_PORT:-55555}:${SYNC_PORT:-55555}/udp"
-    restart: unless-stopped
-```
-
-Based on linuxserver's example [S7], with the UDP mapping and loopback binding added [S2][S10][S19b]. If you change `SYNC_PORT` from `55555`, also change `listening_port` in `data/config/sync.conf` [S2][S11].
-
-### 8.5 Validate and start
+### 8.4 Validate and start
 
 ```bash
 cp .env.example .env            # then edit PUID/PGID/TZ
@@ -235,27 +192,27 @@ docker compose ps
 docker compose logs --tail=50   # expect: Configuration from file "/config/sync.conf" has been applied
 ```
 
-### 8.6 First run in the web UI
+### 8.5 First run in the web UI
 
 1. Open `http://127.0.0.1:8888/gui/` from the host [S18]. From a remote machine, tunnel first: `ssh -L 8888:127.0.0.1:8888 <host>`.
 2. Set the web UI login and password. Linux prompts for them on first open [S18][S21].
 3. Set the device name, create the identity, and apply the licence (§5). Put the `.btskey` in `data/sync/` and enter `/sync/<file>.btskey` in the picker [S16][S17].
-4. Optional: in Preferences, confirm the listening port is `55555` [S10].
+4. Optional: in Preferences, confirm the listening port equals `SYNC_PORT` (`44555`) [S10].
 
-### 8.7 Add or link folders
+### 8.6 Add or link folders
 
 - **New share from this host:** create `data/sync/<FolderName>` on the host (as the PUID user), then in the web UI use **"+" → Standard folder** and pick `/sync/<FolderName>`. `belowroot` policy means the web UI can't create folders directly in `/sync`, only below it [S8][S11].
 - **Join an existing share:** **"+" → "Enter a key or link"** and paste the key or link from the other device [S21][S18]. Choose a destination under `/sync/`.
 - **Keys:** read/write vs. read-only keys. A read-only key can be derived with `--get-ro-secret` [S18].
 
-### 8.8 Verify sync
+### 8.7 Verify sync
 
 - In the web UI, the folder should show its peers as connected and the transfer completing.
 - Drop a test file into `data/sync/<FolderName>` on one side and confirm it appears on the other.
 - Check `docker compose logs` for connection errors.
-- Confirm the port is listening on the host: `ss -tulpn | grep 55555` (should list both tcp and udp) **(inference)**.
+- Confirm the port is listening on the host: `ss -tulpn | grep 44555` (should list both tcp and udp) **(inference)**.
 
-### 8.9 Updating
+### 8.8 Updating
 
 ```bash
 # bump RESILIO_TAG in .env (check the Sync change log first) [S12]
@@ -268,7 +225,7 @@ docker image prune      # optional; removes dangling images only
 - The 2.x → 3.x jump needs a licence and drops Business-licence support. Read Resilio's pre-update notes first [S25].
 - Never run `docker compose down -v` in this repo (see `AGENTS.md`).
 
-### 8.10 Backup
+### 8.9 Backup
 
 - Back up **`data/config/`** (storage: `settings.dat`, identity, share DB, licence, and `sync.conf`) [S8][S26]. Stop the container first for a consistent copy:
   ```bash

@@ -7,13 +7,29 @@ services:
       PGID: ${PGID:?set PGID in .env}
       UMASK: ${UMASK:-022}
       TZ: ${TZ:-Etc/UTC}
+      SYNC_PORT: ${SYNC_PORT:-44555}
     volumes:
       - ${CONFIG_DIR:-./data/config}:/config
       - ${SYNC_DIR:-./data/sync}:/sync
       - ${DOWNLOADS_DIR:-./data/downloads}:/downloads
+      # Startup scripts: init/10-listening-port.sh sets listening_port from SYNC_PORT
+      - ./init:/custom-cont-init.d:ro
     ports:
       - "${WEBUI_BIND:-127.0.0.1}:${WEBUI_PORT:-8888}:8888/tcp"
       # Host port must equal container port: Sync advertises its listening_port to peers
       - "${SYNC_PORT:-44555}:${SYNC_PORT:-44555}/tcp"
       - "${SYNC_PORT:-44555}:${SYNC_PORT:-44555}/udp"
     restart: unless-stopped
+    # Web UI answers 401 without credentials; any HTTP response means Sync is up
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-o", "/dev/null", "http://localhost:8888/gui/"]
+      interval: 1m
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    # Sync logs at full debug level; cap Docker's json-file log at 5 x 50 MB (~10 h of history)
+    logging:
+      driver: json-file
+      options:
+        max-size: 50m
+        max-file: "5"
