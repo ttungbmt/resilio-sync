@@ -26,7 +26,7 @@ In Claude Code, `/stack-check` (user-invoked, `.claude/skills/stack-check/`) run
 
 ## Layout and conventions
 
-- `data/` holds the synced folders and Resilio state at runtime. It is gitignored (apart from its own `.gitignore`). Never read, modify or delete anything there, and never run `docker compose down -v` or remove volumes.
+- `data/` holds the synced folders and Resilio state at runtime. It is gitignored. Never read, modify or delete anything there, and never run `docker compose down -v` or remove volumes.
 - `.env` holds secrets and is gitignored. Add every new variable to `.env.example` with a placeholder value. Don't read `.env`.
 - Folders outside the repo (e.g. Obsidian vaults) are mounted per machine in `compose.override.yaml` (gitignored, auto-merged by Compose), targeting `/sync/vaults/<name>`. Keep `compose.override.example.yaml` as the committed template. The mounted folders are user data: same rules as `data/`.
 - `init/` is mounted read-only at `/custom-cont-init.d`; its scripts run as root before Sync starts. `init/10-listening-port.sh` keeps `listening_port` in `sync.conf` equal to `SYNC_PORT`, so only change the port in `.env`. The folder should be owned by root on the host (`sudo chown -R root:root init`), otherwise linuxserver logs a security warning.
